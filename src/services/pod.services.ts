@@ -156,4 +156,9 @@ export class PodService {
 
     return pod;
   }
+
+  // Delete pod ---------------------------------------------
+  static async deletePod(id: string) {
+    return await podRepository.delete(id);
+  }
 }

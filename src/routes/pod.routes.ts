@@ -26,11 +26,19 @@ router.get(
   authorizeRole([ROLES.ADMIN]),
   PodController.getPodById,
 );
+// Update pod by ID
 router.patch(
   "/:id",
   authenticateJWT,
   authorizeRole([ROLES.ADMIN]),
   PodController.updatePod,
-); // Update pod by ID
+);
+// Delete pod
+router.delete(
+  "/:id",
+  authenticateJWT,
+  authorizeRole([ROLES.ADMIN]),
+  PodController.deletePod,
+);
 
 export default router;

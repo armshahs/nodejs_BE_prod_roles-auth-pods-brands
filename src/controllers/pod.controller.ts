@@ -63,4 +63,16 @@ export class PodController {
       return;
     }
   }
+
+  // Delete pod
+  static async deletePod(req: Request, res: Response) {
+    try {
+      await PodService.deletePod(req.params.id);
+      res.status(204).send();
+    } catch (error) {
+      const err = error as Error; // Type assertion
+      res.status(500).json({ message: err.message });
+      return;
+    }
+  }
 }
