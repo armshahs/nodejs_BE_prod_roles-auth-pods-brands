@@ -63,7 +63,7 @@ export class PodService {
     return await podRepository.save(pod);
   }
 
-  // Get all pods--------------------
+  // Get all pods------------------------------------------
   static async getAllPods() {
     return await podRepository.find({
       relations: ["podLeader", "members"],
@@ -71,7 +71,7 @@ export class PodService {
     });
   }
 
-  // Get a pod by ID---------------------------
+  // Get a pod by ID-----------------------------------------
   static async getPodById(id: string) {
     const pod = await podRepository.findOne({
       where: { id },
@@ -84,7 +84,7 @@ export class PodService {
     return pod;
   }
 
-  // Update pod details
+  // Update pod details OPTIMIZED CODE -------------------------------------
   static async updatePod(
     id: string,
     name: string,
@@ -95,61 +95,65 @@ export class PodService {
       throw new Error("Request body or request parameter fields missing");
     }
 
-    // Fetch pod details
-    const pod = await podRepository.findOne({
-      where: { id },
-      relations: ["podLeader", "members"],
-      select: pod_selection,
-    });
+    // Fetch the pod first
+    const pod = await podRepository
+      .createQueryBuilder("pod")
+      .leftJoinAndSelect("pod.podLeader", "podLeader")
+      .select(["pod.id", "pod.name", "podLeader.id"]) // Only fetch necessary fields
+      .where("pod.id = :id", { id })
+      .getOne();
 
     if (!pod || !pod.podLeader) {
       throw new Error("Pod or Pod Leader not found");
     }
 
-    // Update name
+    // Fetch previous pod leader and new pod leader concurrently
+    const leaders = await userRepository.find({
+      where: { id: In([pod?.podLeader?.id, pod_leader_id]) }, // Fetch both at once
+      select: ["id", "email", "name", "role"], // Fetch minimal data
+    });
+
+    const prevPodLeader = leaders.find(
+      (user) => user.id === pod?.podLeader?.id,
+    );
+    const newPodLeader = leaders.find((user) => user.id === pod_leader_id);
+
+    if (!prevPodLeader) throw new Error("Previous Pod Leader not found");
+    if (!newPodLeader) throw new Error("New Pod Leader not found");
+
+    // Update pod name
     pod.name = name;
 
-    // Update role of previous pod leader to team_member if it was team_lead. Do not update admins.
-    const prevPodLeader = await userRepository.findOne({
-      where: { id: pod.podLeader.id },
-      select: ["id", "email", "name", "role"],
-    });
-    console.log("prevPodLeader", prevPodLeader);
-    if (!prevPodLeader) {
-      throw new Error("Pod Leader not found");
-    }
+    // Update previous pod leader role if necessary
     if (prevPodLeader.role === ROLES.TEAM_LEAD) {
-      // Only update if the current pod leader is not an admin
-      prevPodLeader.role = ROLES.TEAM_MEMBER; // Change role to TEAM_MEMBER
-      await userRepository.save(prevPodLeader); // Save the updated role
+      prevPodLeader.role = ROLES.TEAM_MEMBER;
     }
 
-    // Fetch the new pod leader based on the provided pod_leader_id
-    const newPodLeader = await userRepository.findOne({
-      where: { id: pod_leader_id },
-      select: ["id", "email", "name", "role"],
-    });
-    if (!newPodLeader) {
-      throw new Error("New Pod Leader not found");
-    }
+    // Assign new pod leader and update role if necessary
     pod.podLeader = newPodLeader;
     if (newPodLeader.role === ROLES.TEAM_MEMBER) {
       newPodLeader.role = ROLES.TEAM_LEAD;
-      await userRepository.save(newPodLeader); // Save the updated pod leader role in the DB
     }
 
-    // Update members. Ensure the new pod leader is included in the members list if it's not already there
+    // Ensure the new pod leader is included in the members list
     if (!members.includes(pod_leader_id)) {
       members.push(pod_leader_id);
     }
-    const foundUsers = await userRepository.find({
-      where: { id: In(members) },
-      select: ["id", "email", "name", "role"],
-    });
+
+    // Fetch members concurrently
+    const foundUsers = await userRepository
+      .createQueryBuilder("user")
+      .select(["user.id", "user.email", "user.name", "user.role"]) // Select minimal data
+      .where("user.id IN (:...members)", { members }) // Filter by ids in the members list
+      .getMany();
+
     pod.members = foundUsers;
 
-    return await podRepository.save(pod);
-  }
+    // Save all updates in one DB call. Tried promise.all but it was taking more time.
+    await AppDataSource.transaction(async (transactionalEntityManager) => {
+      await transactionalEntityManager.save([prevPodLeader, newPodLeader, pod]); // Batch save
+    });
 
-  //
+    return pod;
+  }
 }
