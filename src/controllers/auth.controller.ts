@@ -6,14 +6,14 @@ import { ROLES } from "../config";
 export class AuthController {
   static async signUp(req: Request, res: Response): Promise<void> {
     try {
-      const { token, userId, role } = await AuthService.signUp(
+      const { token, userId, role, brands } = await AuthService.signUp(
         req.body.email,
         req.body.password,
         req.body.role,
         req.body.name,
         req.body.brands,
       );
-      res.json({ token, userId, role });
+      res.json({ token, userId, role, brands });
     } catch (error) {
       const err = error as Error; // Type assertion
       res.status(400).json({ message: err.message });
@@ -35,7 +35,8 @@ export class AuthController {
     }
   }
 
-  static async getUserDetails(req: AuthRequest, res: Response): Promise<void> {
+  // Get own details ----------------------------------------------------
+  static async getMyDetails(req: AuthRequest, res: Response): Promise<void> {
     try {
       if (!req.user) {
         res.status(400).json({ message: "User not authenticated" });
@@ -44,6 +45,19 @@ export class AuthController {
 
       // Access `user` from `req` safely
       const user: User | null = await AuthService.getUserDetails(req.user.id);
+      res.json(user);
+    } catch (error) {
+      const err = error as Error; // Type assertion
+      res.status(400).json({ message: err.message });
+      return;
+    }
+  }
+
+  // Get user details by admin access ---------------------------------------------------
+  static async getUserDetails(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const user: User | null = await AuthService.getUserDetails(id);
       res.json(user);
     } catch (error) {
       const err = error as Error; // Type assertion
@@ -84,7 +98,7 @@ export class AuthController {
     }
   }
 
-  // Controller method for getting all users
+  // Controller method for getting all users ----------------------------------------
   static async getAllUsers(req: AuthRequest, res: Response): Promise<void> {
     try {
       const users = await AuthService.getAllUsers();
@@ -96,15 +110,14 @@ export class AuthController {
     }
   }
 
-  // PATCH specific user's role
+  // PATCH specific user's role---------------------------------------------------
   static async updateUserRole(req: Request, res: Response): Promise<void> {
     try {
       const { userId } = req.params;
-      const { role } = req.body;
-      const { name } = req.body;
+      const { role, name, brands } = req.body;
 
-      if (!role) {
-        res.status(400).json({ message: "Role is required." });
+      if (!role || !name || !brands) {
+        res.status(400).json({ message: "Role, name and brands is required." });
         return;
       }
 
@@ -116,7 +129,12 @@ export class AuthController {
         return;
       }
 
-      const updatedUser = await AuthService.updateUserData(userId, role, name);
+      const updatedUser = await AuthService.updateUserData(
+        userId,
+        role,
+        name,
+        brands,
+      );
 
       if (!updatedUser) {
         res.status(404).json({ message: "User not found." });

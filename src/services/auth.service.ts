@@ -10,6 +10,7 @@ const userRepository = AppDataSource.getRepository(User);
 const brandRepository = AppDataSource.getRepository(Brand);
 
 export class AuthService {
+  // SignUp --------------------------------------------------------
   static async signUp(
     email: string,
     password: string,
@@ -34,9 +35,10 @@ export class AuthService {
     });
     await userRepository.save(user);
     const token = generateToken(user.id, user.role);
-    return { token, userId: user.id, role: user.role };
+    return { token, userId: user.id, role: user.role, brands: user.brands };
   }
 
+  // Login ----------------------------------------------------------------------------
   static async login(email: string, password: string) {
     const user = await userRepository.findOne({ where: { email } });
     if (!user || !(await bcrypt.compare(password, user.password))) {
@@ -49,10 +51,12 @@ export class AuthService {
   static async getUserDetails(userId: string) {
     return await userRepository.findOne({
       where: { id: userId },
-      select: ["id", "email", "role"],
+      select: ["id", "email", "role", "name", "brands"],
+      relations: ["brands"],
     });
   }
 
+  // Reset password Request -----------------------------------------------------------------------
   static async resetPasswordRequest(email: string) {
     const user = await userRepository.findOne({ where: { email } });
     if (!user) throw new Error("User not found");
@@ -84,31 +88,52 @@ export class AuthService {
     await userRepository.delete(userId);
   }
 
-  // Get all users - for Admin use
+  // Get all users - for Admin use --------------------------------------------
   static async getAllUsers(): Promise<User[]> {
-    return await userRepository.find({
-      select: ["id", "email", "role", "name"], // Specify the attributes you want to select
-    });
+    return await userRepository
+      .createQueryBuilder("user")
+      .leftJoinAndSelect("user.pod", "pod") // Join the pod relation
+      .select([
+        "user.id",
+        "user.email",
+        "user.role",
+        "user.name",
+        "pod.id",
+        "pod.name",
+      ])
+      .getMany();
   }
 
-  // Update role for a specific user - for Admin use
+  // Update role for a specific user - for Admin use ------------------------------------
   static async updateUserData(
     userId: string,
     role: string,
     name: string,
+    brands: string[] = [], // Default to an empty array
   ): Promise<User | null> {
-    const user = await userRepository.findOne({
-      where: { id: userId },
-      select: ["id", "email", "role", "name"],
-    });
+    const [user, brandEntities] = await Promise.all([
+      userRepository.findOne({
+        where: { id: userId },
+        select: ["id", "name", "email", "role"],
+        relations: ["brands"], // Ensure brands relation is loaded
+      }),
+      brands.length > 0
+        ? brandRepository.find({
+            where: { id: In(brands) },
+          })
+        : Promise.resolve([]),
+    ]);
+    console.log(brandEntities);
+
     if (!user) {
       return null; // User not found
     }
 
     user.role = role as RoleType;
     user.name = name;
+    user.brands = brandEntities; // If no brands found, assign an empty array
 
-    await userRepository.save(user); // Save updated user
+    await userRepository.save(user);
     return user;
   }
 }

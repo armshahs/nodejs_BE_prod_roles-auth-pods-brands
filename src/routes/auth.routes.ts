@@ -13,7 +13,15 @@ router.post(
   AuthController.signUp,
 ); // Always add authenticateJWT before authorizeRole or else it will not get req.user
 router.post("/login", AuthController.login);
-router.get("/me", authenticateJWT, AuthController.getUserDetails);
+// Get my details
+router.get("/me", authenticateJWT, AuthController.getMyDetails);
+// Get a sepecific used details - Admin access
+router.get(
+  "/:id",
+  authenticateJWT,
+  authorizeRole([ROLES.ADMIN]),
+  AuthController.getUserDetails,
+);
 
 // Reset password for sending email, reset password-confirm for changing password.
 router.post("/reset-password", AuthController.resetPasswordRequest);
