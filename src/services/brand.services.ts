@@ -11,12 +11,13 @@ export class BrandService {
     // Find the performance marketer if provided
     let performanceMarketer: User | null = null; // default is null
     let pod: Pod | null = null; // `undefined` will be inferred if not set
+    let podLead: User | null | undefined = null;
 
     if (performanceMarketerId) {
       performanceMarketer = await userRepository.findOne({
         where: { id: performanceMarketerId },
         select: ["id", "email", "name", "role"], // Select only specific fields for performance marketer
-        relations: ["pod"],
+        relations: ["pod", "pod.podLeader"],
       });
 
       if (!performanceMarketer) {
@@ -25,6 +26,8 @@ export class BrandService {
 
       // Fetch the Pod linked with the performance marketer
       pod = performanceMarketer.pod ?? null;
+      podLead = pod?.podLeader;
+      console.log(podLead);
     }
 
     // Create the new Brand instance
@@ -32,6 +35,7 @@ export class BrandService {
       name,
       performanceMarketer,
       pod,
+      podLead,
     });
 
     // Save the new Brand to the database
@@ -53,6 +57,13 @@ export class BrandService {
         ? {
             id: pod.id,
             name: pod.name,
+          }
+        : null,
+      podLead: podLead
+        ? {
+            id: podLead.id,
+            name: podLead.name,
+            email: podLead.email,
           }
         : null,
     };
