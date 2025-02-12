@@ -8,9 +8,10 @@ import {
   OneToMany,
   JoinColumn,
   Index,
+  ManyToMany,
 } from "typeorm";
 import { ROLES, RoleType } from "../config";
-import { Pod } from "../models";
+import { Pod, Brand } from "../models";
 
 @Entity()
 @Index("idx_email", ["email"])
@@ -45,8 +46,19 @@ export class User {
   pod?: Pod | null;
 
   // One User can lead multiple Pods
+  // Do not add "Pod[] | null" for onetomany or manytomany relations.
   @OneToMany(() => Pod, (pod) => pod.podLeader, { nullable: true })
-  leadPods?: Pod[] | null; // If the user is a leader, link to the pod leader's pod
+  leadPods?: Pod[]; // If the user is a leader, link to the pod leader's pod
+
+  // Many users can have access to multiple brands (Optional). Here the user has access to these brands but may not be the assigned performance marketer.
+  @ManyToMany(() => Brand, (brand) => brand.members, { nullable: true })
+  brands?: Brand[];
+
+  // List of brands for the user is the assigned performance marketer.
+  @OneToMany(() => Brand, (brand) => brand.performanceMarketer, {
+    nullable: true,
+  })
+  performanceBrands?: Brand[];
 
   @CreateDateColumn()
   createdAt!: Date;

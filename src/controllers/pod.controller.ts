@@ -7,6 +7,7 @@ export class PodController {
   static async createPod(req: AuthRequest, res: Response) {
     const { name, pod_leader_id, members } = req.body;
     // console.log("req.user?.id", req.user?.id);
+    // console.log("req.user?.role", req.user?.role);
 
     try {
       // Call the service method to create a pod
@@ -48,6 +49,7 @@ export class PodController {
       const err = error as Error; // Type assertion
       logError(logger, req, err);
       res.status(400).json({ message: err.message });
+      return;
     }
   }
 

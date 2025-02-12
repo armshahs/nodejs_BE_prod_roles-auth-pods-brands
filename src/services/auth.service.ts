@@ -1,11 +1,13 @@
 import { AppDataSource } from "../database";
-import { User } from "../models";
+import { In } from "typeorm";
+import { User, Brand } from "../models";
 import bcrypt from "bcryptjs";
 import { generateToken } from "../utils";
 import { sendResetEmail } from "../utils";
 import { ROLES, RoleType } from "../config";
 
 const userRepository = AppDataSource.getRepository(User);
+const brandRepository = AppDataSource.getRepository(Brand);
 
 export class AuthService {
   static async signUp(
@@ -13,13 +15,22 @@ export class AuthService {
     password: string,
     role: RoleType = ROLES.TEAM_MEMBER,
     name: string,
+    brands: string[] = [], // Default to an empty array
   ) {
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // const hashedPassword = await bcrypt.hash(password, 10);
+    // Run hashing and brand fetching in parallel for optimization
+    const [hashedPassword, brandEntities] = await Promise.all([
+      bcrypt.hash(password, 10), // Hashing password in parallel
+      brands.length > 0
+        ? brandRepository.findBy({ id: In(brands) })
+        : Promise.resolve([]), // Fetch brands if needed
+    ]);
     const user = userRepository.create({
       email,
       password: hashedPassword,
       role,
       name,
+      brands: brandEntities.length > 0 ? brandEntities : undefined, // Assign brands if found
     });
     await userRepository.save(user);
     const token = generateToken(user.id, user.role);

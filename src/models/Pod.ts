@@ -9,7 +9,7 @@ import {
   UpdateDateColumn,
   Index,
 } from "typeorm";
-import { User } from "../models"; // Import User entity
+import { User, Brand } from "../models"; // Import User entity
 
 @Entity()
 @Index("idx_pod_leader_id", ["podLeader"])
@@ -21,8 +21,9 @@ export class Pod {
   name!: string;
 
   // One Pod Leader (User) can be assigned to multiple Pods
+  // Only set the SET NULL on Many to One, since if User model is deleted, then podLeader should be set null.
   @ManyToOne(() => User, (user) => user.leadPods, {
-    onDelete: "SET NULL",
+    onDelete: "SET NULL", // Pod leader can be removed without deleting the pod
     nullable: true,
   })
   @JoinColumn({ name: "pod_leader_id" })
@@ -31,6 +32,10 @@ export class Pod {
   // One pod can have multiple members
   @OneToMany(() => User, (user) => user.pod)
   members?: User[];
+
+  // One pod can have multiple brands linked to it
+  @OneToMany(() => Brand, (brand) => brand.pod)
+  brands?: Brand[];
 
   @CreateDateColumn()
   createdAt!: Date;

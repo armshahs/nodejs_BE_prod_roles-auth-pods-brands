@@ -11,11 +11,13 @@ export class AuthController {
         req.body.password,
         req.body.role,
         req.body.name,
+        req.body.brands,
       );
       res.json({ token, userId, role });
     } catch (error) {
       const err = error as Error; // Type assertion
       res.status(400).json({ message: err.message });
+      return;
     }
   }
 
@@ -29,6 +31,7 @@ export class AuthController {
     } catch (error) {
       const err = error as Error; // Type assertion
       res.status(401).json({ message: err.message });
+      return;
     }
   }
 
@@ -45,6 +48,7 @@ export class AuthController {
     } catch (error) {
       const err = error as Error; // Type assertion
       res.status(400).json({ message: err.message });
+      return;
     }
   }
 
@@ -58,6 +62,7 @@ export class AuthController {
     } catch (error) {
       const err = error as Error; // Type assertion
       res.status(400).json({ message: err.message });
+      return;
     }
   }
 
@@ -75,6 +80,7 @@ export class AuthController {
     } catch (error) {
       const err = error as Error; // Type assertion
       res.status(400).json({ message: err.message });
+      return;
     }
   }
 
@@ -86,6 +92,7 @@ export class AuthController {
     } catch (error) {
       const err = error as Error;
       res.status(400).json({ message: err.message });
+      return;
     }
   }
 
@@ -120,6 +127,7 @@ export class AuthController {
     } catch (error) {
       const err = error as Error;
       res.status(400).json({ message: err.message });
+      return;
     }
   }
 }

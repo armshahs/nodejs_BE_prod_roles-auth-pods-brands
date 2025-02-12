@@ -33,3 +33,16 @@ export const pod_selection = {
     name: true,
   },
 };
+
+export const brand_selection = {
+  id: true,
+  name: true,
+  performanceMarketer: {
+    id: true,
+    name: true,
+  },
+  pod: {
+    id: true,
+    name: true,
+  },
+};
