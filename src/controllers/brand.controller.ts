@@ -58,9 +58,10 @@ export class BrandController {
   ): Promise<void> {
     try {
       const { id } = req.params;
-      const { performanceMarketerId } = req.body;
+      const { name, performanceMarketerId } = req.body;
       const brand = await BrandService.updateBrandDetailsOwnership(
         id,
+        name,
         performanceMarketerId,
       );
       res.status(200).json(brand);

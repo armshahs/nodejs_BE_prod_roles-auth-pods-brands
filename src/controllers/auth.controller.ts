@@ -102,7 +102,7 @@ export class AuthController {
   static async getAllUsers(req: Request, res: Response): Promise<void> {
     try {
       const users = await AuthService.getAllUsers();
-      res.json(users);
+      res.status(200).json(users);
     } catch (error) {
       const err = error as Error;
       res.status(400).json({ message: err.message });

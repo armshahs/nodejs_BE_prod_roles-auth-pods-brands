@@ -104,6 +104,7 @@ export class BrandService {
   // Update specific brand details (Brand Ownership) -----------------------------------------------------------
   static async updateBrandDetailsOwnership(
     brandId: string,
+    name: string,
     performanceMarketerId?: string,
   ) {
     // Fetch brand and performance marketer concurrently if performanceMarketerId is provided
@@ -133,6 +134,7 @@ export class BrandService {
       brand.pod = pod;
       brand.podLead = podLead;
     }
+    brand.name = name;
 
     const savedBrand = await brandRepository.save(brand);
 

@@ -89,7 +89,7 @@ export class AuthService {
   }
 
   // Get all users - for Admin use --------------------------------------------
-  static async getAllUsers(): Promise<User[]> {
+  static async getAllUsers() {
     return await userRepository
       .createQueryBuilder("user")
       .leftJoinAndSelect("user.pod", "pod") // Join the pod relation
