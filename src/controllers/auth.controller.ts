@@ -99,7 +99,7 @@ export class AuthController {
   }
 
   // Controller method for getting all users ----------------------------------------
-  static async getAllUsers(req: AuthRequest, res: Response): Promise<void> {
+  static async getAllUsers(req: Request, res: Response): Promise<void> {
     try {
       const users = await AuthService.getAllUsers();
       res.json(users);

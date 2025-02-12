@@ -15,9 +15,16 @@ router.post(
 router.post("/login", AuthController.login);
 // Get my details
 router.get("/me", authenticateJWT, AuthController.getMyDetails);
+// Get all Users or update users - admin access only
+router.get(
+  "/users",
+  authenticateJWT,
+  authorizeRole([ROLES.ADMIN]),
+  AuthController.getAllUsers,
+);
 // Get a sepecific used details - Admin access
 router.get(
-  "/:id",
+  "/users/:id",
   authenticateJWT,
   authorizeRole([ROLES.ADMIN]),
   AuthController.getUserDetails,
@@ -27,13 +34,6 @@ router.get(
 router.post("/reset-password", AuthController.resetPasswordRequest);
 router.post("/reset-password-confirm", AuthController.resetPasswordConfirm);
 
-// Get all Users or update users - admin access only
-router.get(
-  "/users",
-  authenticateJWT,
-  authorizeRole([ROLES.ADMIN]),
-  AuthController.getAllUsers,
-);
 router.patch(
   "/users/:userId/role",
   authenticateJWT,

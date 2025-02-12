@@ -27,7 +27,7 @@ export class BrandService {
       // Fetch the Pod linked with the performance marketer
       pod = performanceMarketer.pod ?? null;
       podLead = pod?.podLeader;
-      console.log(podLead);
+      // console.log(podLead);
     }
 
     // Create the new Brand instance
@@ -112,6 +112,7 @@ export class BrandService {
       performanceMarketerId
         ? userRepository.findOne({
             where: { id: performanceMarketerId },
+            relations: ["pod", "pod.podLeader"],
           })
         : null,
     ]);
@@ -124,8 +125,13 @@ export class BrandService {
       throw new Error("New performance marketer not found");
     }
 
-    if (performanceMarketerId) {
+    if (newPerformanceMarketer) {
       brand.performanceMarketer = newPerformanceMarketer!;
+      // Set the pod and podLead fields
+      const pod = newPerformanceMarketer?.pod ?? null;
+      const podLead = pod?.podLeader ?? null;
+      brand.pod = pod;
+      brand.podLead = podLead;
     }
 
     const savedBrand = await brandRepository.save(brand);

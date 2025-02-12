@@ -1,8 +1,8 @@
 import { In } from "typeorm";
 import { AppDataSource } from "../database";
-import { Pod } from "../models";
-import { User } from "../models";
+import { User, Pod } from "../models";
 import { ROLES, pod_selection } from "../config";
+import { updateAllBrandsForPod } from "../utils";
 
 const podRepository = AppDataSource.getRepository(Pod);
 const userRepository = AppDataSource.getRepository(User);
@@ -57,10 +57,15 @@ export class PodService {
     pod.name = name;
     pod.podLeader = podLeader;
     pod.members = users;
-    // pod.members = [...users, podLeader]; // Adds pod leader to the team.
 
     // Save the pod to the database
-    return await podRepository.save(pod);
+    const savedPod = await podRepository.save(pod);
+
+    // Perform a bulk update on the brands, setting the pod and podLead fields
+    // updateBrandsForPod(members, savedPod, podLeader);
+    updateAllBrandsForPod();
+
+    return savedPod;
   }
 
   // Get all pods------------------------------------------
@@ -154,11 +159,17 @@ export class PodService {
       await transactionalEntityManager.save([prevPodLeader, newPodLeader, pod]); // Batch save
     });
 
+    // Perform a bulk update on the brands, setting the pod and podLead fields
+    // updateBrandsForPod(members, pod, newPodLeader);
+    updateAllBrandsForPod();
+
     return pod;
   }
 
   // Delete pod ---------------------------------------------
   static async deletePod(id: string) {
-    return await podRepository.delete(id);
+    const pod = await podRepository.delete(id);
+    updateAllBrandsForPod();
+    return pod;
   }
 }
