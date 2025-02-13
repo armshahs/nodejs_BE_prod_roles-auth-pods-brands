@@ -11,4 +11,7 @@ export class Currency extends BaseModel {
 
   @Column()
   symbol!: string; // e.g., "$", "€"
+
+  @Column({ type: "decimal", precision: 10, scale: 4, nullable: true })
+  conversion_rate?: number | null; // Conversion rate to base currency (USD)
 }

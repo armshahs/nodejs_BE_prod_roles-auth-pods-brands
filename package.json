@@ -21,6 +21,7 @@
   "dependencies": {
     "@logtail/node": "^0.5.2",
     "@logtail/winston": "^0.5.2",
+    "axios": "^1.7.9",
     "bcryptjs": "^2.4.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",

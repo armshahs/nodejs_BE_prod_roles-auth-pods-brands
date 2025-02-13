@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import helmet from "helmet";
 import cors from "cors";
 import compression from "compression";
-import { authRoutes, podRoutes, brandRoutes } from "./routes";
+import { authRoutes, podRoutes, brandRoutes, currencyRoutes } from "./routes";
 // import { AppDataSource } from "./database";
 import { errorHandler } from "./middleware";
 import { EntityNotFoundError } from "./errors";
@@ -23,6 +23,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/saas/api/v1/auth/", authRoutes);
 app.use("/saas/api/v1/pods/", podRoutes);
 app.use("/saas/api/v1/brands/", brandRoutes);
+app.use("/saas/api/v1/currency/", currencyRoutes);
 
 app.get("/saas/api/v1/test", (req: Request, res: Response) => {
   logger.info("Sample request");
