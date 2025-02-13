@@ -5,9 +5,9 @@ import { logger, logError } from "../utils";
 
 export class PodController {
   static async createPod(req: AuthRequest, res: Response) {
-    const { name, pod_leader_id, members } = req.body;
-    // console.log("req.user?.id", req.user?.id);
-    // console.log("req.user?.role", req.user?.role);
+    const name = req.body.name.trim();
+    const pod_leader_id = req.body.pod_leader_id.trim();
+    const members = req.body.members;
 
     try {
       // Call the service method to create a pod
@@ -56,7 +56,9 @@ export class PodController {
   // Update pod details
   static async updatePod(req: AuthRequest, res: Response) {
     const { id } = req.params;
-    const { name, pod_leader_id, members } = req.body;
+    const name = req.body.name.trim();
+    const pod_leader_id = req.body.pod_leader_id.trim();
+    const members = req.body.members;
     try {
       const updatedPod = await PodService.updatePod(
         id,

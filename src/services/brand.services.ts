@@ -1,4 +1,4 @@
-import { brand_selection } from "../config";
+import { brand_selection, RoleType, ROLES } from "../config";
 import { AppDataSource } from "../database";
 import { User, Brand, Pod } from "../models";
 
@@ -71,7 +71,7 @@ export class BrandService {
     return brandResponse;
   }
 
-  // Get all brands (brand ownership) -----------------------------------------------------------
+  // Get all brands (brand ownership) - admin access only -----------------------------------------------------------
   static async getAllBrandsOwnership() {
     const brands = await brandRepository
       .createQueryBuilder("brand")
@@ -82,12 +82,56 @@ export class BrandService {
         "performanceMarketer.name",
         "pod.id",
         "pod.name",
+        // "members.id", // if you want members to be shown + edit leftJoin
+        // "members.name",
       ])
       .leftJoin("brand.performanceMarketer", "performanceMarketer")
       .leftJoin("brand.pod", "pod")
+      // .leftJoin("brand.members", "members") // if you want members + edit select
+      .orderBy("brand.name", "ASC") // Sort by name in ascending order
       .getMany();
 
     return brands;
+  }
+
+  // Get all brands for me (brand ownership) -----------------------------------------------------------
+  static async getAllBrandsForMe(user_id: string, user_role: RoleType) {
+    // If role is ROLES.ADMIN, get access to all brands
+    // If role is ROLES.TEAM_LEAD get access to all brands with pod_lead_id = user_id AND brands in User.brands
+    // If role is ROLES.TEAM_MEMBER get access to all brands with performancemarketerId = user_id AND brands in User.brands
+    // If role is ROLES.CLIENT get access to all brands in User.brands
+    const query = brandRepository
+      .createQueryBuilder("brand")
+      .select([
+        "brand.id",
+        "brand.name",
+        "performanceMarketer.id",
+        "performanceMarketer.name",
+        "pod.id",
+        "pod.name",
+        "members.id", // if you want members to be shown + edit leftJoin
+        "members.name",
+      ])
+      .leftJoin("brand.performanceMarketer", "performanceMarketer")
+      .leftJoin("brand.pod", "pod")
+      .leftJoin("brand.members", "members") // if you want members + edit select
+      .orderBy("brand.name", "ASC"); // Sort by name in ascending order
+
+    if (user_role === ROLES.ADMIN) {
+      // Admin has access to all brands, no filter needed
+    } else if (user_role === ROLES.TEAM_LEAD) {
+      query
+        .where("brand.pod_lead_id = :user_id", { user_id })
+        .orWhere("members.id = :user_id", { user_id });
+    } else if (user_role === ROLES.TEAM_MEMBER) {
+      query
+        .where("brand.performance_marketer_id = :user_id", { user_id })
+        .orWhere("members.id = :user_id", { user_id });
+    } else if (user_role === ROLES.CLIENT) {
+      query.where("members.id = :user_id", { user_id });
+    }
+
+    return await query.getMany();
   }
 
   // Get specific brand details -----------------------------------------------------------

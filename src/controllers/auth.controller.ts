@@ -7,13 +7,13 @@ export class AuthController {
   static async signUp(req: Request, res: Response): Promise<void> {
     try {
       const { token, userId, role, brands } = await AuthService.signUp(
-        req.body.email,
-        req.body.password,
+        req.body.email.trim(),
+        req.body.password.trim(),
         req.body.role,
-        req.body.name,
+        req.body.name.trim(),
         req.body.brands,
       );
-      res.json({ token, userId, role, brands });
+      res.status(201).json({ token, userId, role, brands });
     } catch (error) {
       const err = error as Error; // Type assertion
       res.status(400).json({ message: err.message });
@@ -24,44 +24,13 @@ export class AuthController {
   static async login(req: Request, res: Response): Promise<void> {
     try {
       const { token, userId, role } = await AuthService.login(
-        req.body.email,
-        req.body.password,
+        req.body.email.trim(),
+        req.body.password.trim(),
       );
-      res.json({ token, userId, role });
+      res.status(200).json({ token, userId, role });
     } catch (error) {
       const err = error as Error; // Type assertion
       res.status(401).json({ message: err.message });
-      return;
-    }
-  }
-
-  // Get own details ----------------------------------------------------
-  static async getMyDetails(req: AuthRequest, res: Response): Promise<void> {
-    try {
-      if (!req.user) {
-        res.status(400).json({ message: "User not authenticated" });
-        return;
-      }
-
-      // Access `user` from `req` safely
-      const user: User | null = await AuthService.getUserDetails(req.user.id);
-      res.json(user);
-    } catch (error) {
-      const err = error as Error; // Type assertion
-      res.status(400).json({ message: err.message });
-      return;
-    }
-  }
-
-  // Get user details by admin access ---------------------------------------------------
-  static async getUserDetails(req: AuthRequest, res: Response): Promise<void> {
-    try {
-      const { id } = req.params;
-      const user: User | null = await AuthService.getUserDetails(id);
-      res.json(user);
-    } catch (error) {
-      const err = error as Error; // Type assertion
-      res.status(400).json({ message: err.message });
       return;
     }
   }
@@ -71,8 +40,8 @@ export class AuthController {
     res: Response,
   ): Promise<void> {
     try {
-      await AuthService.resetPasswordRequest(req.body.email);
-      res.json({ message: "Reset email sent" });
+      await AuthService.resetPasswordRequest(req.body.email.trim());
+      res.status(200).json({ message: "Reset email sent" });
     } catch (error) {
       const err = error as Error; // Type assertion
       res.status(400).json({ message: err.message });
@@ -87,10 +56,41 @@ export class AuthController {
     try {
       await AuthService.resetPasswordConfirm(
         req.body.token,
-        req.body.newPassword,
-        req.body.confirmPassword,
+        req.body.newPassword.trim(),
+        req.body.confirmPassword.trim(),
       );
-      res.json({ message: "Password reset successful" });
+      res.status(200).json({ message: "Password reset successful" });
+    } catch (error) {
+      const err = error as Error; // Type assertion
+      res.status(400).json({ message: err.message });
+      return;
+    }
+  }
+
+  // Get own details ----------------------------------------------------
+  static async getMyDetails(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(400).json({ message: "User not authenticated" });
+        return;
+      }
+
+      // Access `user` from `req` safely
+      const user: User | null = await AuthService.getUserDetails(req.user.id);
+      res.status(200).json(user);
+    } catch (error) {
+      const err = error as Error; // Type assertion
+      res.status(400).json({ message: err.message });
+      return;
+    }
+  }
+
+  // Get user details by admin access ---------------------------------------------------
+  static async getUserDetails(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const user: User | null = await AuthService.getUserDetails(id);
+      res.status(200).json(user);
     } catch (error) {
       const err = error as Error; // Type assertion
       res.status(400).json({ message: err.message });
@@ -110,11 +110,25 @@ export class AuthController {
     }
   }
 
-  // PATCH specific user's role---------------------------------------------------
-  static async updateUserRole(req: Request, res: Response): Promise<void> {
+  // Controller method for getting all employees - admin access only ----------------------------------------
+  static async getAllEmployees(req: Request, res: Response): Promise<void> {
     try {
-      const { userId } = req.params;
-      const { role, name, brands } = req.body;
+      const users = await AuthService.getAllEmployees();
+      res.status(200).json(users);
+    } catch (error) {
+      const err = error as Error;
+      res.status(400).json({ message: err.message });
+      return;
+    }
+  }
+
+  // PATCH specific user's role---------------------------------------------------
+  static async updateUserData(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const role = req.body.role.trim();
+      const name = req.body.name.trim();
+      const brands = req.body.brands;
 
       if (!role || !name || !brands) {
         res.status(400).json({ message: "Role, name and brands is required." });
@@ -130,7 +144,7 @@ export class AuthController {
       }
 
       const updatedUser = await AuthService.updateUserData(
-        userId,
+        id,
         role,
         name,
         brands,
@@ -141,7 +155,7 @@ export class AuthController {
         return;
       }
 
-      res.json(updatedUser);
+      res.status(200).json(updatedUser);
     } catch (error) {
       const err = error as Error;
       res.status(400).json({ message: err.message });

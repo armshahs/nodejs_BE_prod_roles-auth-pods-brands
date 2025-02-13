@@ -48,14 +48,6 @@ export class AuthService {
     return { token, userId: user.id, role: user.role };
   }
 
-  static async getUserDetails(userId: string) {
-    return await userRepository.findOne({
-      where: { id: userId },
-      select: ["id", "email", "role", "name", "brands"],
-      relations: ["brands"],
-    });
-  }
-
   // Reset password Request -----------------------------------------------------------------------
   static async resetPasswordRequest(email: string) {
     const user = await userRepository.findOne({ where: { email } });
@@ -84,8 +76,13 @@ export class AuthService {
     await userRepository.save(user);
   }
 
-  static async deleteUser(userId: string) {
-    await userRepository.delete(userId);
+  // Get specific user details -------------------------------------------------------------
+  static async getUserDetails(userId: string) {
+    return await userRepository.findOne({
+      where: { id: userId },
+      select: ["id", "email", "role", "name", "brands"],
+      relations: ["brands"],
+    });
   }
 
   // Get all users - for Admin use --------------------------------------------
@@ -101,6 +98,25 @@ export class AuthService {
         "pod.id",
         "pod.name",
       ])
+      .orderBy("user.name", "ASC") // Sort by name in ascending order
+      .getMany();
+  }
+
+  // Get all employees - for Admin use -------------------------------------------
+  static async getAllEmployees() {
+    return await userRepository
+      .createQueryBuilder("user")
+      .leftJoinAndSelect("user.pod", "pod") // Join the pod relation
+      .select([
+        "user.id",
+        "user.email",
+        "user.role",
+        "user.name",
+        "pod.id",
+        "pod.name",
+      ])
+      .where("user.role != :clientRole", { clientRole: ROLES.CLIENT }) // Exclude clients
+      .orderBy("user.name", "ASC") // Sort by name in ascending order
       .getMany();
   }
 
@@ -135,5 +151,10 @@ export class AuthService {
 
     await userRepository.save(user);
     return user;
+  }
+
+  // Delete user - admin access
+  static async deleteUser(userId: string) {
+    await userRepository.delete(userId);
   }
 }

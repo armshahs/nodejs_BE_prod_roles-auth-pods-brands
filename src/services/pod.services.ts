@@ -73,6 +73,7 @@ export class PodService {
     return await podRepository.find({
       relations: ["podLeader", "members"],
       select: pod_selection,
+      order: { name: "ASC" }, // Sort pods by name in ascending order
     });
   }
 
