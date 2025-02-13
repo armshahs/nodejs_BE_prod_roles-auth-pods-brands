@@ -1,25 +1,19 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
   Column,
   ManyToOne,
   ManyToMany,
   JoinColumn,
   JoinTable,
-  CreateDateColumn,
-  UpdateDateColumn,
   Index,
 } from "typeorm";
-import { User, Pod } from "../models"; // Import User entity
+import { User, Pod, BaseModel } from "../models"; // Import User entity
 
 @Entity()
 @Index("idx_brand_performance_marketer_id", ["performanceMarketer"])
 @Index("idx_brand_pod_id", ["pod"])
 @Index("idx_brand_pod_lead_id", ["podLead"])
-export class Brand {
-  @PrimaryGeneratedColumn("uuid")
-  id!: string;
-
+export class Brand extends BaseModel {
   @Column()
   name!: string;
 
@@ -51,10 +45,4 @@ export class Brand {
   @ManyToMany(() => User, (user) => user.brands, { nullable: true })
   @JoinTable()
   members?: User[];
-
-  @CreateDateColumn()
-  createdAt!: Date;
-
-  @UpdateDateColumn()
-  modifiedAt!: Date;
 }

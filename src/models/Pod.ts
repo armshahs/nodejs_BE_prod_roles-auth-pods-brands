@@ -1,22 +1,16 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
   Column,
   ManyToOne,
   OneToMany,
   JoinColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
   Index,
 } from "typeorm";
-import { User, Brand } from "../models"; // Import User entity
+import { User, Brand, BaseModel } from "../models"; // Import User entity
 
 @Entity()
 @Index("idx_pod_leader_id", ["podLeader"])
-export class Pod {
-  @PrimaryGeneratedColumn("uuid")
-  id!: string;
-
+export class Pod extends BaseModel {
   @Column({ unique: true })
   name!: string;
 
@@ -36,10 +30,4 @@ export class Pod {
   // One pod can have multiple brands linked to it
   @OneToMany(() => Brand, (brand) => brand.pod)
   brands?: Brand[];
-
-  @CreateDateColumn()
-  createdAt!: Date;
-
-  @UpdateDateColumn()
-  modifiedAt!: Date;
 }

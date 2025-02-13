@@ -45,4 +45,7 @@ export const config = {
     emailPassword: process.env.EMAIL_PASSWORD || "",
     emailClientUrl: process.env.EMAIL_CLIENT_URL || "",
   },
+  currency: {
+    exchangeApiKey: process.env.CURRENCY_EXCHANGE_API_KEY || "",
+  },
 };

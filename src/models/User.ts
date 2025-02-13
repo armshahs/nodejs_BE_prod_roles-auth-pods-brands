@@ -1,9 +1,9 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  // PrimaryGeneratedColumn,
   Column,
-  CreateDateColumn,
-  UpdateDateColumn,
+  // CreateDateColumn,
+  // UpdateDateColumn,
   ManyToOne,
   OneToMany,
   JoinColumn,
@@ -11,15 +11,15 @@ import {
   ManyToMany,
 } from "typeorm";
 import { ROLES, RoleType } from "../config";
-import { Pod, Brand } from "../models";
+import { Pod, Brand, BaseModel } from "../models";
 
 @Entity()
 @Index("idx_email", ["email"])
 @Index("idx_pod_id", ["pod"])
 @Index("idx_role", ["role"])
-export class User {
-  @PrimaryGeneratedColumn("uuid")
-  id!: string;
+export class User extends BaseModel {
+  // @PrimaryGeneratedColumn("uuid")
+  // id!: string;
 
   @Column({ unique: true })
   email!: string;
@@ -60,9 +60,9 @@ export class User {
   })
   performanceBrands?: Brand[];
 
-  @CreateDateColumn()
-  createdAt!: Date;
+  // @CreateDateColumn()
+  // createdAt!: Date;
 
-  @UpdateDateColumn()
-  modifiedAt!: Date;
+  // @UpdateDateColumn()
+  // modifiedAt!: Date;
 }
