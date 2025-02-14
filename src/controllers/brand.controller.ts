@@ -4,7 +4,10 @@ import { BrandService } from "../services";
 import { logger, logError } from "../utils";
 
 export class BrandController {
-  // Create brand -admin only -----------------------------------------------
+  // ============================================================================================
+  // BRAND OWNERSHIP APIs (General Settings Tabs) - Admin acces only
+  // ============================================================================================
+  // [BRAND_OWNERSHIP] Create brand -admin only -----------------------------------------------
   static async createBrand(req: Request, res: Response): Promise<void> {
     try {
       // While destructuring the code, req.body assigns undefined to performanceMarketerID which is fine since it is optional.
@@ -22,7 +25,7 @@ export class BrandController {
     }
   }
 
-  // Get all brands (brand ownership) - admin only -----------------------------------------------------------
+  // [BRAND_OWNERSHIP] Get all brands - admin only -----------------------------------------------------------
   static async getAllBrandsOwnership(
     req: Request,
     res: Response,
@@ -38,28 +41,7 @@ export class BrandController {
     }
   }
 
-  // Get all brands for me -----------------------------------------------------------
-  static async getAllBrandsForMe(
-    req: AuthRequest,
-    res: Response,
-  ): Promise<void> {
-    try {
-      if (!req.user) {
-        throw new Error("Request user missing");
-      }
-      const user_id = req.user.id;
-      const user_role = req.user.role;
-      const brands = await BrandService.getAllBrandsForMe(user_id, user_role);
-      res.status(200).json(brands);
-    } catch (error) {
-      const err = error as Error; // Type assertion
-      logError(logger, req, err);
-      res.status(400).json({ message: err.message });
-      return;
-    }
-  }
-
-  // Get specific brand details -admin only -----------------------------------------------------------
+  // [BRAND_OWNERSHIP] Get specific brand details -admin only -----------------------------------------------------------
   static async getBrandDetails(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
@@ -73,7 +55,7 @@ export class BrandController {
     }
   }
 
-  // Update specific brand details (Brand Ownership) - admin only -----------------------------------------------------------
+  // [BRAND_OWNERSHIP] Update specific brand details - admin only -----------------------------------------------------------
   static async updateBrandDetailsOwnership(
     req: Request,
     res: Response,
@@ -95,12 +77,37 @@ export class BrandController {
     }
   }
 
-  // Delete specific brand  - admin only -----------------------------------------------------------
+  // [BRAND_OWNERSHIP] Delete specific brand  - admin only -----------------------------------------------------------
   static async deleteBrand(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       await BrandService.deleteBrand(id);
       res.status(204).json();
+    } catch (error) {
+      const err = error as Error; // Type assertion
+      logError(logger, req, err);
+      res.status(400).json({ message: err.message });
+      return;
+    }
+  }
+
+  // ============================================================================================
+  // BRAND APIs - General Access
+  // ============================================================================================
+
+  // Get all brands for me -----------------------------------------------------------
+  static async getAllBrandsForMe(
+    req: AuthRequest,
+    res: Response,
+  ): Promise<void> {
+    try {
+      if (!req.user) {
+        throw new Error("Request user missing");
+      }
+      const user_id = req.user.id;
+      const user_role = req.user.role;
+      const brands = await BrandService.getAllBrandsForMe(user_id, user_role);
+      res.status(200).json(brands);
     } catch (error) {
       const err = error as Error; // Type assertion
       logError(logger, req, err);

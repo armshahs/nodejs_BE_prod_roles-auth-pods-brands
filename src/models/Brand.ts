@@ -7,7 +7,7 @@ import {
   JoinTable,
   Index,
 } from "typeorm";
-import { User, Pod, BaseModel } from "../models"; // Import User entity
+import { User, Pod, BaseModel, Currency } from "../models"; // Import User entity
 
 @Entity()
 @Index("idx_brand_performance_marketer_id", ["performanceMarketer"])
@@ -16,6 +16,16 @@ import { User, Pod, BaseModel } from "../models"; // Import User entity
 export class Brand extends BaseModel {
   @Column()
   name!: string;
+
+  @Column({ nullable: true, default: "Australia/Melbourne" })
+  timezone?: string; // Store timezone in IANA format (e.g., "America/New_York") Default is Melbourne
+
+  @ManyToOne(() => Currency, (currency) => currency.brands, {
+    onDelete: "SET NULL",
+    nullable: true,
+  })
+  @JoinColumn({ name: "currency_id" })
+  currency?: Currency | null;
 
   // One performance marketer (key user who manages brand performance)
   @ManyToOne(() => User, (user) => user.performanceBrands, {

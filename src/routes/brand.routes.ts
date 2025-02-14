@@ -4,6 +4,9 @@ import { ROLES } from "../config";
 import { BrandController } from "../controllers";
 
 const router = express.Router();
+// =================================================================
+// BRAND OWNERSHIP APIs (General Settings Tabs) - Admin acces only
+// =================================================================
 
 // Create brand - admin only
 router.post(
@@ -19,8 +22,6 @@ router.get(
   authorizeRole([ROLES.ADMIN]),
   BrandController.getAllBrandsOwnership,
 );
-// Get all brands for me
-router.get("/me", authenticateJWT, BrandController.getAllBrandsForMe);
 // Get single brand details - admin only
 router.get(
   "/:id",
@@ -42,5 +43,12 @@ router.delete(
   authorizeRole([ROLES.ADMIN]),
   BrandController.deleteBrand,
 );
+
+// =================================================================
+// BRAND APIs - General Access
+// =================================================================
+
+// Get all brands for me
+router.get("/me", authenticateJWT, BrandController.getAllBrandsForMe);
 
 export default router;

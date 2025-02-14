@@ -6,7 +6,7 @@ import {
 } from "typeorm";
 
 @Entity()
-export class BaseModel {
+export abstract class BaseModel {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 

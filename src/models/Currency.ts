@@ -1,5 +1,5 @@
-import { Entity, Column } from "typeorm";
-import { BaseModel } from "./BaseModel";
+import { Entity, Column, OneToMany } from "typeorm";
+import { Brand, BaseModel } from "../models";
 
 @Entity()
 export class Currency extends BaseModel {
@@ -14,4 +14,9 @@ export class Currency extends BaseModel {
 
   @Column({ type: "decimal", precision: 10, scale: 4, nullable: true })
   conversion_rate?: number | null; // Conversion rate to base currency (USD)
+
+  @OneToMany(() => Brand, (brand) => brand.currency, {
+    nullable: true,
+  })
+  brands?: Brand[];
 }
