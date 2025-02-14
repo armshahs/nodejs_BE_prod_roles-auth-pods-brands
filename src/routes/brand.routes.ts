@@ -49,6 +49,10 @@ router.delete(
 // =================================================================
 
 // Get all brands for me
-router.get("/me", authenticateJWT, BrandController.getAllBrandsForMe);
+router.get(
+  "/general-access/me", // or else it clashes with "/:id"
+  authenticateJWT,
+  BrandController.getAllBrandsForMe,
+);
 
 export default router;
