@@ -5,8 +5,8 @@ import { config } from "../config";
 
 const currencyRepository = AppDataSource.getRepository(Currency);
 
-const API_URL = `https://openexchangerates.org/api/latest.json?app_id=${config.currency.exchangeApiKey}`; // Replace with your API provider
-// const UPDATE_INTERVAL_HOURS = 24; // Update every 12 hours
+const BASE_API_URL = config.currency.exchangeApiUrlBase;
+const API_URL = `${BASE_API_URL}app_id=${config.currency.exchangeApiKey}`;
 
 export class CurrencyService {
   // Update all currencies by fetching the exchange rates -----------------------

@@ -47,5 +47,6 @@ export const config = {
   },
   currency: {
     exchangeApiKey: process.env.CURRENCY_EXCHANGE_API_KEY || "",
+    exchangeApiUrlBase: process.env.CURRENCY_EXCHANGE_API_URL_BASE || "",
   },
 };
